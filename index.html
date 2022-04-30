@@ -238,14 +238,14 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2021/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xxe/">java代码审计-xxe</a>
+      <a class="article-title" href="/2022/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xxe/">java代码审计-xxe</a>
     </h1>
   
 
         
         
-<a href="/2021/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xxe/" class="archive-article-date">
-  	<time datetime="2021-04-28T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-28</time>
+<a href="/2022/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xxe/" class="archive-article-date">
+  	<time datetime="2022-04-28T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-28</time>
 </a>
         
       </header>
@@ -253,18 +253,9 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="0x00-漏洞挖掘"><a href="#0x00-漏洞挖掘" class="headerlink" title="0x00 漏洞挖掘"></a>0x00 漏洞挖掘</h2><p>java解析xml的方法有多种，比较常见的有四种：DOM、DOM4J、JDOM 和SAX。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1. DocumentBuilder 原生、可回显</span></span><br><span class="line"><span class="keyword">import</span> javax.xml.parsers.DocumentBuilderFactory;</span><br><span class="line">DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();</span><br><span class="line">DocumentBuilder db = dbf.newDocumentBuilder();</span><br><span class="line">StringReader sr = <span class="keyword">new</span> StringReader(xml_con);</span><br><span class="line">InputSource is = <span class="keyword">new</span> InputSource(sr);</span><br><span class="line">Document document = db.parse(is); </span><br><span class="line"></span><br><span class="line"><span class="comment">//2. saxReader 第三方库</span></span><br><span class="line"><span class="keyword">import</span> org.dom4j.io.SAXReader;</span><br><span class="line">SAXReader saxReader = <span class="keyword">new</span> SAXReader();</span><br><span class="line">Document document = saxReader.read(request.getInputStream());</span><br><span class="line"></span><br><span class="line"><span class="comment">//3. SAXBuilder 第三方库</span></span><br><span class="line"><span class="keyword">import</span> org.jdom2.input.SAXBuilder;</span><br><span class="line">SAXBuilder builder = <span class="keyword">new</span> SAXBuilder();  </span><br><span class="line">Document document = builder.build(request.getInputStream());</span><br><span class="line"></span><br><span class="line"><span class="comment">//4. SAXParserFactory 原生、不可回显</span></span><br><span class="line"><span class="keyword">import</span> javax.xml.parsers.SAXParserFactory;</span><br><span class="line">SAXParserFactory factory  = SAXParserFactory.newInstance(); </span><br><span class="line">SAXParser saxparser = factory.newSAXParser();</span><br><span class="line">SAXHandler handler = <span class="keyword">new</span> SAXHandler();  </span><br><span class="line">saxparser.parse(request.getInputStream(), handler);</span><br></pre></td></tr></table></figure>
-
-<p>还有其他整理如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.xml.sax.helpers.XMLReaderFactory;</span><br><span class="line">XMLReader xmlReader = XMLReaderFactory.createXMLReader();</span><br><span class="line">xmlReader.parse( <span class="keyword">new</span> InputSource(<span class="keyword">new</span> StringReader(xml_con)) );</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.digester3.Digester;</span><br><span class="line">Digester digester = <span class="keyword">new</span> Digester();</span><br><span class="line">digester.parse(<span class="keyword">new</span> StringReader(xml_con)); </span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.xml.parsers.DocumentBuilderFactory;</span><br><span class="line">DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();</span><br><span class="line">dbf.setXIncludeAware(<span class="keyword">true</span>);   <span class="comment">// 支持XInclude</span></span><br><span class="line">dbf.setNamespaceAware(<span class="keyword">true</span>);  <span class="comment">// 支持XInclude</span></span><br><span class="line">DocumentBuilder db = dbf.newDocumentBuilder();</span><br><span class="line">StringReader sr = <span class="keyword">new</span> StringReader(xml_con);</span><br><span class="line">InputSource is = <span class="keyword">new</span> InputSource(sr);</span><br><span class="line">Document document = db.parse(is);  <span class="comment">// parse xml</span></span><br><span class="line"></span><br><span class="line">SAXParserFactory spf = SAXParserFactory.newInstance();</span><br><span class="line">SAXParser saxParser = spf.newSAXParser();</span><br><span class="line">XMLReader xmlReader = saxParser.getXMLReader();</span><br><span class="line">xmlReader.parse( <span class="keyword">new</span> InputSource(<span class="keyword">new</span> StringReader(xml_con)) );</span><br></pre></td></tr></table></figure>
-
-<p>通常parse方法返回void的，就是无回显的。</p>
-<h2 id="0x01-漏洞防御"><a href="#0x01-漏洞防御" class="headerlink" title="0x01 漏洞防御"></a>0x01 漏洞防御</h2><p>xxe的防御比较简单，禁用外部实体即可。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//实例化解析类之后通常会支持着三个配置</span></span><br><span class="line">obj.setFeature(<span class="string">&quot;http://apache.org/xml/features/disallow-doctype-decl&quot;</span>, <span class="keyword">true</span>);</span><br><span class="line">obj.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-general-entities&quot;</span>, <span class="keyword">false</span>);</span><br><span class="line">obj.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-parameter-entities&quot;</span>, <span class="keyword">false</span>);</span><br></pre></td></tr></table></figure>
-
-<h2 id="0x02-参考链接"><a href="#0x02-参考链接" class="headerlink" title="0x02 参考链接"></a>0x02 参考链接</h2><p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/2761">JAVA代码审计之XXE与SSRF</a></p>
-<p><a target="_blank" rel="noopener" href="https://github.com/JoyChou93/java-sec-code/blob/master/src/main/java/org/joychou/controller/XXE.java">https://github.com/JoyChou93/java-sec-code/blob/master/src/main/java/org/joychou/controller/XXE.java</a></p>
-
+        
+          <a class="article-more-a" href="/2022/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xxe/#more">more >></a>
+        
       
 
       
@@ -287,7 +278,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2021/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xxe/">展开全文 >></a>
+          <a class="article-more-a" href="/2022/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xxe/">展开全文 >></a>
         </p>
       
 
@@ -325,61 +316,24 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2021/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5/">java代码审计-表达式注入</a>
+      <a class="article-title" href="/2022/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5/">java代码审计-表达式注入</a>
     </h1>
   
 
         
         
-<a href="/2021/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5/" class="archive-article-date">
-  	<time datetime="2021-04-28T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-28</time>
+<a href="/2022/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5/" class="archive-article-date">
+  	<time datetime="2022-04-28T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-28</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="0x01漏洞挖掘"><a href="#0x01漏洞挖掘" class="headerlink" title="0x01漏洞挖掘"></a>0x01漏洞挖掘</h2><h3 id="spel"><a href="#spel" class="headerlink" title="spel"></a>spel</h3><p>spel表达式有三种用法：</p>
-<ol>
-<li><p>注解</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@value(&quot;#&#123;表达式&#125;&quot;)</span></span><br><span class="line"><span class="keyword">public</span> String arg;</span><br></pre></td></tr></table></figure>
-
-<p>这种一般是写死在代码中的，不是关注的重点。</p>
-</li>
-<li><p>xml</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;Bean1&quot;</span> <span class="attr">class</span>=<span class="string">&quot;com.test.xxx&quot;</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;arg&quot;</span> <span class="attr">value</span>=<span class="string">&quot;#&#123;表达式&#125;&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>这种情况通常也是写死在代码中的，但是也有已知的利用场景，就是利用反序列化让程序加载我们实现构造好的恶意xml文件，如jackson的CVE-2017-17485、weblogic的CVE-2019-2725等。</p>
-</li>
-<li><p>在代码中处理外部传入的表达式</p>
-<p>这部分是关注的重点。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping(&quot;/spel&quot;)</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">spel</span><span class="params">(<span class="meta">@RequestParam(name = &quot;spel&quot;)</span> String spel)</span> </span>&#123;</span><br><span class="line">    ExpressionParser expressionParser = <span class="keyword">new</span> SpelExpressionParser();</span><br><span class="line">    Expression expression = expressionParser.parseExpression(spel);</span><br><span class="line">    Object object = expression.getValue();</span><br><span class="line">    <span class="keyword">return</span> object.toString();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ol>
-<p>漏洞可以利用的前置条件有三个：</p>
-<ol>
-<li>传入的表达式为过滤</li>
-<li>表达式解析之后调用了<strong>getValue/setValue</strong>方法</li>
-<li>使用<strong>StandardEvaluationContext</strong>（默认）作为上下文对象</li>
-</ol>
-<p>spel表达式功能非常强大，在漏洞利用方面主要使用这几个功能：</p>
-<ul>
-<li><p>使用T(Type)表示Type类的实例,Type为全限定名称,如T(com.test.Bean1)。但是java.lang例外,该包下的类可以不指定包名。得到类实例后会访问类静态方法与字段。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">T(java.lang.Runtime).getRuntime().exec(<span class="string">&quot;whoami&quot;</span>)</span><br></pre></td></tr></table></figure></li>
-<li><p>直接通过java语法实例化对象、调用方法</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> ProcessBuilder(<span class="string">&quot;whoami&quot;</span>).start()</span><br><span class="line"></span><br><span class="line"><span class="comment">//可以利用反射来绕过一些过滤</span></span><br><span class="line">#&#123;&#x27;&#x27;.getClass().forName(&#x27;java.la&#x27;+&#x27;ng.Ru&#x27;+&#x27;ntime&#x27;).getMethod(&#x27;ex&#x27;+&#x27;ec&#x27;,&#x27;&#x27;.getClass()).invoke(&#x27;&#x27;.getClass().forName(&#x27;java.la&#x27;+&#x27;ng.Ru&#x27;+&#x27;ntime&#x27;).getMethod(&#x27;getRu&#x27;+&#x27;ntime&#x27;).invoke(null),&#x27;calc&#x27;)&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h3 id="jexl"><a href="#jexl" class="headerlink" title="jexl"></a>jexl</h3><p>关于jexl，比较有代表性的就是前段时间Nexus的rce，<a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/4136">Nexus Repository Manager 3 RCE 分析 -【CVE-2019-7238】</a>文章在这，不再赘述。</p>
-<h3 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h3><p>还有其它种类的表达式，如EL，不会轻易造成安全问题，暂时略过；OGNL表达式会在struts2相关的漏洞中详细说明。</p>
-<h2 id="0x02漏洞防御"><a href="#0x02漏洞防御" class="headerlink" title="0x02漏洞防御"></a>0x02漏洞防御</h2><ol>
-<li><p>最简单的方式，使用<strong>SimpleEvaluationContext</strong>作为上下文对象。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping(&quot;/spel&quot;)</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">spel</span><span class="params">(<span class="meta">@RequestParam(name = &quot;spel&quot;)</span> String spel)</span> </span>&#123;</span><br><span class="line">    ExpressionParser expressionParser = <span class="keyword">new</span> SpelExpressionParser();</span><br><span class="line">    Expression expression = expressionParser.parseExpression(spel);</span><br><span class="line">  	</span><br><span class="line">  	<span class="comment">//SimpleEvaluationContext减少了一部分功能，并在权限控制上进一步细化</span></span><br><span class="line">  	<span class="comment">//可以配置让spel表达式只能访问指定对象</span></span><br><span class="line">  	Category category = <span class="keyword">new</span> Category();</span><br><span class="line">    EvaluationContext context = SimpleEvaluationContext.forReadOnlyDataBinding().withRootObject(category).build();</span><br><span class="line">  </span><br><span class="line">    Object object = expression.getValue();</span><br><span class="line">    <span class="keyword">return</span> object.toString();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>如果SimpleEvaluationContext不能满足需求，就需要对输入进行严格的过滤。</p>
-</li>
-</ol>
-<h2 id="0x03参考链接"><a href="#0x03参考链接" class="headerlink" title="0x03参考链接"></a>0x03参考链接</h2><p><a target="_blank" rel="noopener" href="https://p0rz9.github.io/2019/05/28/SpEL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5/">SpEL表达式注入</a></p>
-<p><a target="_blank" rel="noopener" href="https://aluvion.github.io/2019/04/25/Java%E7%89%B9%E8%89%B2-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E6%94%BE%E5%BC%83/">Java特色-表达式注入漏洞从入门到放弃</a></p>
-<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/4136">Nexus Repository Manager 3 RCE 分析 -【CVE-2019-7238】</a></p>
-
+        <h2 id="0x01漏洞挖掘"><a href="#0x01漏洞挖掘" class="headerlink" title="0x01漏洞挖掘"></a>0x01漏洞挖掘</h2><h3 id="spel"><a href="#spel" class="headerlink" title="spel"></a>spel</h3><p>spel表达式有三种用法：
+        
+          <a class="article-more-a" href="/2022/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5/#more">more >></a>
+        
       
 
       
@@ -402,7 +356,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2021/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5/">展开全文 >></a>
+          <a class="article-more-a" href="/2022/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5/">展开全文 >></a>
         </p>
       
 
@@ -440,14 +394,14 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2021/04/27/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xss/">java代码审计-xss</a>
+      <a class="article-title" href="/2022/04/27/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xss/">java代码审计-xss</a>
     </h1>
   
 
         
         
-<a href="/2021/04/27/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xss/" class="archive-article-date">
-  	<time datetime="2021-04-27T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-27</time>
+<a href="/2022/04/27/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xss/" class="archive-article-date">
+  	<time datetime="2022-04-27T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-27</time>
 </a>
         
       </header>
@@ -455,18 +409,9 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="0x01-漏洞挖掘"><a href="#0x01-漏洞挖掘" class="headerlink" title="0x01 漏洞挖掘"></a>0x01 漏洞挖掘</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doGet</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="keyword">throws</span> IOException, ServletException </span>&#123;</span><br><span class="line">    response.setContentType(<span class="string">&quot;text/html&quot;</span>);</span><br><span class="line">    String content = request.getParameter(<span class="string">&quot;content&quot;</span>);</span><br><span class="line">    request.setAttribute(<span class="string">&quot;content&quot;</span>, content);</span><br><span class="line">    request.getRequestDispatcher(<span class="string">&quot;/WEB-INF/pages/xss.jsp&quot;</span>).forward(request, response);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&lt;%@ page contentType=<span class="string">&quot;text/html;charset=UTF-8&quot;</span> language=<span class="string">&quot;java&quot;</span> %&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;title&gt;Xss Test&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">&lt;div&gt;</span><br><span class="line">    $&#123;content&#125;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
-
-<p>一个简单的小demo，xss本质上就是浏览器执行了域外的代码，出现的场景比较多，需要具体情况具体分析</p>
-<h2 id="0x02-漏洞防御"><a href="#0x02-漏洞防御" class="headerlink" title="0x02 漏洞防御"></a>0x02 漏洞防御</h2><p>可以使用esapi的encoder</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.owasp.esapi.ESAPI;</span><br><span class="line"></span><br><span class="line">String content = request.getParameter(<span class="string">&quot;content&quot;</span>);</span><br><span class="line">content = ESAPI.encoder().encodeForHTML(content);</span><br><span class="line">content = ESAPI.encoder().encoderForJavaScript(content); <span class="comment">//防御dom xss使用jsencode</span></span><br></pre></td></tr></table></figure>
-
-<p>也可以自行进行htmlencode</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.commons.lang.StringUtils;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> String <span class="title">htmlEncode</span><span class="params">(String content)</span> </span>&#123;</span><br><span class="line">    content = StringUtils.replace(content, <span class="string">&quot;&amp;&quot;</span>, <span class="string">&quot;&amp;amp;&quot;</span>);</span><br><span class="line">    content = StringUtils.replace(content, <span class="string">&quot;&lt;&quot;</span>, <span class="string">&quot;&amp;lt;&quot;</span>);</span><br><span class="line">    content = StringUtils.replace(content, <span class="string">&quot;&gt;&quot;</span>, <span class="string">&quot;&amp;gt;&quot;</span>);</span><br><span class="line">    content = StringUtils.replace(content, <span class="string">&quot;\&quot;&quot;</span>, <span class="string">&quot;&amp;quot;&quot;</span>);</span><br><span class="line">    content = StringUtils.replace(content, <span class="string">&quot;&#x27;&quot;</span>, <span class="string">&quot;&amp;#x27;&quot;</span>);</span><br><span class="line">    content = StringUtils.replace(content, <span class="string">&quot;/&quot;</span>, <span class="string">&quot;&amp;#x2F;&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> content;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="0x03-参考链接"><a href="#0x03-参考链接" class="headerlink" title="0x03 参考链接"></a>0x03 参考链接</h2><p><a target="_blank" rel="noopener" href="http://liehu.tass.com.cn/archives/1427">http://liehu.tass.com.cn/archives/1427</a></p>
-
+        
+          <a class="article-more-a" href="/2022/04/27/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xss/#more">more >></a>
+        
       
 
       
@@ -489,7 +434,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2021/04/27/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xss/">展开全文 >></a>
+          <a class="article-more-a" href="/2022/04/27/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xss/">展开全文 >></a>
         </p>
       
 
@@ -527,14 +472,14 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2021/04/26/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssti/">java代码审计-ssti</a>
+      <a class="article-title" href="/2022/04/26/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssti/">java代码审计-ssti</a>
     </h1>
   
 
         
         
-<a href="/2021/04/26/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssti/" class="archive-article-date">
-  	<time datetime="2021-04-26T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-26</time>
+<a href="/2022/04/26/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssti/" class="archive-article-date">
+  	<time datetime="2022-04-26T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-26</time>
 </a>
         
       </header>
@@ -542,115 +487,8 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="0x01漏洞挖掘"><a href="#0x01漏洞挖掘" class="headerlink" title="0x01漏洞挖掘"></a>0x01漏洞挖掘</h2><h3 id="Velocity"><a href="#Velocity" class="headerlink" title="Velocity"></a>Velocity</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping(&quot;/ssti/velocity&quot;)</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">velocity</span><span class="params">(<span class="meta">@RequestParam(name = &quot;content&quot;)</span> String content)</span> </span>&#123;</span><br><span class="line">    Velocity.init();</span><br><span class="line">    VelocityContext velocityContext = <span class="keyword">new</span> VelocityContext();</span><br><span class="line"></span><br><span class="line">    velocityContext.put(<span class="string">&quot;username&quot;</span>, <span class="string">&quot;seaii&quot;</span>);</span><br><span class="line"></span><br><span class="line">    StringWriter stringWriter = <span class="keyword">new</span> StringWriter();</span><br><span class="line">    Velocity.evaluate(velocityContext, stringWriter, <span class="string">&quot;test&quot;</span>, content);</span><br><span class="line">    <span class="keyword">return</span> stringWriter.toString();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>利用方式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#set ($exp &#x3D; &quot;exp&quot;);$exp.getClass().forName(&quot;java.lang.Runtime&quot;).getRuntime().exec(&quot;whoami&quot;)</span><br></pre></td></tr></table></figure>
-
-<h3 id="FreeMarker"><a href="#FreeMarker" class="headerlink" title="FreeMarker"></a>FreeMarker</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping(&quot;/ssti/freemarker&quot;)</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">freemarker</span><span class="params">()</span> <span class="keyword">throws</span> IOException, TemplateException </span>&#123;</span><br><span class="line">    Configuration configuration = <span class="keyword">new</span> Configuration(Configuration.VERSION_2_3_23);</span><br><span class="line">    configuration.setClassForTemplateLoading(<span class="keyword">this</span>.getClass(), <span class="string">&quot;/templates&quot;</span>);</span><br><span class="line">    Template template = configuration.getTemplate(<span class="string">&quot;test.ftl&quot;</span>);</span><br><span class="line"></span><br><span class="line">    Map&lt;String, Object&gt; rootMap = <span class="keyword">new</span> HashMap&lt;String, Object&gt;();</span><br><span class="line">    rootMap.put(<span class="string">&quot;username&quot;</span>, <span class="string">&quot;passwd&quot;</span>);</span><br><span class="line">    StringWriter stringWriter = <span class="keyword">new</span> StringWriter();</span><br><span class="line">    template.process(rootMap, stringWriter);</span><br><span class="line">    <span class="keyword">return</span> stringWriter.toString();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>freemarker与velocity的攻击方式不太一样，freemarker可利用的点在于模版语法本身，直接渲染用户输入payload会被转码而失效，所以一般的利用场景为上传或者修改模版文件。</p>
-<p>利用方式如下：</p>
-<p>命令执行1：</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;#assign ex=&quot;freemarker.template.utility.Execute&quot;?new()&gt;$&#123; ex(&quot;id&quot;) &#125;</span><br></pre></td></tr></table></figure>
-
-<p>命令执行2：</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;#assign ob=&quot;freemarker.template.utility.ObjectConstructor&quot;?new()&gt; </span><br><span class="line">&lt;#assign br=ob(&quot;java.io.BufferedReader&quot;,ob(&quot;java.io.InputStreamReader&quot;,ob(&quot;java.lang.ProcessBuilder&quot;,&quot;ifconfig&quot;).start().getInputStream())) &gt;        </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&lt;#list 1..10000 as t&gt;</span><br><span class="line">    &lt;#assign line=br.readLine()!&quot;null&quot;&gt;</span><br><span class="line">    &lt;#if line==&quot;null&quot;&gt;</span><br><span class="line">        &lt;#break&gt;</span><br><span class="line">    &lt;/#if&gt;</span><br><span class="line">    $&#123;line&#125;</span><br><span class="line">    $&#123;<span class="string">&quot;&lt;br&gt;&quot;</span>&#125;</span><br><span class="line">&lt;/#list&gt;</span><br></pre></td></tr></table></figure>
-
-<p>文件读取：</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;#assign ob=&quot;freemarker.template.utility.ObjectConstructor&quot;?new()&gt; </span><br><span class="line">&lt;#assign br=ob(&quot;java.io.BufferedReader&quot;,ob(&quot;java.io.InputStreamReader&quot;,ob(&quot;java.io.FileInputStream&quot;,&quot;/etc/passwd&quot;))) &gt;        </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&lt;#list 1..10000 as t&gt;</span><br><span class="line">    &lt;#assign line=br.readLine()!&quot;null&quot;&gt;</span><br><span class="line">    &lt;#if line==&quot;null&quot;&gt;</span><br><span class="line">        &lt;#break&gt;</span><br><span class="line">    &lt;/#if&gt;</span><br><span class="line">    $&#123;line?html&#125;</span><br><span class="line">    $&#123;<span class="string">&quot;&lt;br&gt;&quot;</span>&#125;</span><br><span class="line">&lt;/#list&gt;</span><br></pre></td></tr></table></figure>
-
-<p>将上面的payload写入到模版文件保存，然后让freemarker加载即可。</p>
-<h2 id="0x02漏洞防御"><a href="#0x02漏洞防御" class="headerlink" title="0x02漏洞防御"></a>0x02漏洞防御</h2><h3 id="Velocity-1"><a href="#Velocity-1" class="headerlink" title="Velocity"></a>Velocity</h3><p>velocity到目前最新版本也没有提供沙盒或者防御方式，只能禁止或严格过滤用户输入进入<strong>Velocity.evaluate</strong>。</p>
-<h3 id="FreeMarker-1"><a href="#FreeMarker-1" class="headerlink" title="FreeMarker"></a>FreeMarker</h3><p>最简单的方式是使用<strong>TemplateClassResolver</strong>，文档在这：</p>
-<p><a target="_blank" rel="noopener" href="https://freemarker.apache.org/docs/api/freemarker/core/TemplateClassResolver.html">https://freemarker.apache.org/docs/api/freemarker/core/TemplateClassResolver.html</a></p>
-<p><img src="https://mdpicture.oss-cn-beijing.aliyuncs.com/20191210230921.png"></p>
-<p>可根据实际需求选择这两种方式，代码实现如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">configuration.setNewBuiltinClassResolver(TemplateClassResolver.SAFER_RESOLVER);</span><br></pre></td></tr></table></figure>
-
-<p>但这并不是一劳永逸的防御方式，如果配置不当，依然会造成安全问题：</p>
-<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/4846">Freemarker模板注入 Bypass</a></p>
-<h2 id="0x03参考链接"><a href="#0x03参考链接" class="headerlink" title="0x03参考链接"></a>0x03参考链接</h2><p><a target="_blank" rel="noopener" href="https://wooyun.js.org/drops/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%A8%A1%E6%9D%BF%E6%B3%A8%E5%85%A5%EF%BC%9A%E7%8E%B0%E4%BB%A3WEB%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%EF%BC%88%E8%A1%A5%E5%85%85%E7%BF%BB%E8%AF%91%E5%92%8C%E6%89%A9%E5%B1%95%EF%BC%89.html">服务端模板注入：现代WEB远程代码执行（补充翻译和扩展）</a></p>
-<p><a target="_blank" rel="noopener" href="https://www.blackhat.com/docs/us-15/materials/us-15-Kettle-Server-Side-Template-Injection-RCE-For-The-Modern-Web-App-wp.pdf">https://www.blackhat.com/docs/us-15/materials/us-15-Kettle-Server-Side-Template-Injection-RCE-For-The-Modern-Web-App-wp.pdf</a></p>
-<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/4846">Freemarker模板注入 Bypass</a></p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">文章</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2021/04/26/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssti/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
         
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-文件上传漏洞" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2021/04/26/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E/">文件上</a>
-    </h1>
-  
-
-        
-        
-<a href="/2021/04/26/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E/" class="archive-article-date">
-  	<time datetime="2021-04-26T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-26</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="开始"><a href="#开始" class="headerlink" title="开始"></a>开始</h1><p>最新的<a target="_blank" rel="noopener" href="https://github.com/c0ny1/upload-labs">源码</a>有21关，但网上大多数教程都是20关的,原因是作者新增了一个第五关，之后的每关都往后推了一位</p>
-<p>因为作者给出了，所以大部分关卡都是
-        
-          <a class="article-more-a" href="/2021/04/26/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E/#more">more >></a>
+          <a class="article-more-a" href="/2022/04/26/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssti/#more">more >></a>
         
       
 
@@ -674,7 +512,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2021/04/26/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E/">展开全文 >></a>
+          <a class="article-more-a" href="/2022/04/26/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssti/">展开全文 >></a>
         </p>
       
 
@@ -712,77 +550,24 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2021/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-sqli/">Java代码审计-sqli</a>
+      <a class="article-title" href="/2022/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-sqli/">Java代码审计-sqli</a>
     </h1>
   
 
         
         
-<a href="/2021/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-sqli/" class="archive-article-date">
-  	<time datetime="2021-04-25T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-25</time>
+<a href="/2022/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-sqli/" class="archive-article-date">
+  	<time datetime="2022-04-25T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-25</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h3 id="0x01-漏洞挖掘"><a href="#0x01-漏洞挖掘" class="headerlink" title="0x01 漏洞挖掘"></a>0x01 漏洞挖掘</h3><h4 id="jdbc"><a href="#jdbc" class="headerlink" title="jdbc"></a>jdbc</h4><p>在上古时期，人们往往这么从数据库获取数据。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> User <span class="title">getUserById</span><span class="params">(String id)</span> <span class="keyword">throws</span> SQLException </span>&#123;</span><br><span class="line">    Connection connection = JDBCTOOLS.getConnection();</span><br><span class="line">		String sql = <span class="string">&quot;select id,username from user where id=&quot;</span> + id;</span><br><span class="line">		Statement statement = connection.createStatement();</span><br><span class="line">    ResultSet resultSet = statement.executeQuery(sql);</span><br><span class="line"></span><br><span class="line">    resultSet.next();</span><br><span class="line">    <span class="keyword">int</span> userId = resultSet.getInt(<span class="number">1</span>);</span><br><span class="line">    String username = resultSet.getString(<span class="number">2</span>);</span><br><span class="line">    User user = <span class="keyword">new</span> User(userId, username);</span><br><span class="line">    <span class="keyword">return</span> user;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>通过拼接字符串来构建sql语句，其中又有用户可控的部分，很容易出现问题。</p>
-<p>后来，出现了预编译机制，但是预编译只能处理查询参数，很多场景下仅仅使用预编译是不够的。</p>
-<ul>
-<li><p>like</p>
-<p>在使用模糊查询的场景中，</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">String sql = <span class="string">&quot;select * from user where username like &#x27;%?%&#x27;&quot;</span>;</span><br></pre></td></tr></table></figure>
-
-<p>这种写法是无法进行预编译的，程序会报错。</p>
-</li>
-<li><p>order by</p>
-<p>需要按照时间、id等信息进行排序的时候，也是无法使用预编译的。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">String sort = req.getParameter(<span class="string">&quot;sort&quot;</span>);</span><br><span class="line"></span><br><span class="line">String sql = <span class="string">&quot;select * from user order by ?&quot;</span>;</span><br><span class="line">PreparedStatement preparedStatement = connection.prepareStatement(sql); <span class="comment">//预编译</span></span><br><span class="line">preparedStatement.setString(<span class="number">1</span>, sort); <span class="comment">//绑定参数</span></span><br><span class="line">ResultSet resultSet = preparedStatement.executeQuery();</span><br></pre></td></tr></table></figure>
-
-<p>如果像上面这样强行使用预编译，数据库会将字段名解析为字符串，即实际执行的sql为</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> <span class="keyword">user</span> <span class="keyword">order</span> <span class="keyword">by</span> <span class="string">&#x27;username&#x27;</span>;</span><br></pre></td></tr></table></figure>
-
-<p>无法达到实际需求。</p>
-</li>
-</ul>
-<h4 id="Hibernate"><a href="#Hibernate" class="headerlink" title="Hibernate"></a>Hibernate</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Autowired</span> CategoryDAO categoryDAO; <span class="comment">//依赖注入</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/hibernate&quot;)</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">hibernate</span><span class="params">(<span class="meta">@RequestParam(name = &quot;id&quot;)</span> <span class="keyword">int</span> id)</span> </span>&#123;</span><br><span class="line">  Category category = categoryDAO.getOne(id);</span><br><span class="line">  <span class="keyword">return</span> category.getName();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>hibernate即我们经常使用的orm的一种实现，如果使用已封装好的方法，那么默认是使用预编译的。需要注意的有这么几种情况：</p>
-<ol>
-<li>对于一些复杂的sql语句，需要开发手写sql，此时要严格过滤用户输入。</li>
-<li>上面提到的预编译不生效的几种场景。</li>
-</ol>
-<h4 id="Mybatis"><a href="#Mybatis" class="headerlink" title="Mybatis"></a>Mybatis</h4><p>mybatis有两种写法，一种是基于注解：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">CategoryMapper</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Select(&quot;select * from category_ where name= &#x27;$&#123;name&#125;&#x27; &quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> CategoryM <span class="title">getByName</span><span class="params">(<span class="meta">@Param(&quot;name&quot;)</span> String name)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>另一种是基于xml：</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">mapper</span></span></span><br><span class="line"><span class="meta">        <span class="meta-keyword">PUBLIC</span> <span class="meta-string">&quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;</span></span></span><br><span class="line"><span class="meta">        <span class="meta-string">&quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">mapper</span> <span class="attr">namespace</span>=<span class="string">&quot;cn.seaii.springboot.mapper.CategoryMapper&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">&quot;get&quot;</span> <span class="attr">resultType</span>=<span class="string">&quot;cn.seaii.springboot.pojo.CategoryM&quot;</span>&gt;</span></span><br><span class="line">        select * from category_ where id= $&#123;id&#125;</span><br><span class="line">    <span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">mapper</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>注意在maven项目中，xml文件要放在resources目录中。</p>
-<h3 id="0x02-漏洞防御"><a href="#0x02-漏洞防御" class="headerlink" title="0x02 漏洞防御"></a>0x02 漏洞防御</h3><h4 id="2-1-类型转换"><a href="#2-1-类型转换" class="headerlink" title="2.1 类型转换"></a>2.1 类型转换</h4><p>java是一门强类型的语言，所以数字型注入一般很少出现，但还是要有必要的类型转换。</p>
-<p>比如通过HttpServletRequest的getParameter方法获取到的参数的类型都是String。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> id = Integer.valueof(req.getParameter(<span class="string">&quot;id&quot;</span>));</span><br></pre></td></tr></table></figure>
-
-<h4 id="2-2-预编译"><a href="#2-2-预编译" class="headerlink" title="2.2 预编译"></a>2.2 预编译</h4><p>无论那种web编程语言，目前防注入最通用、最流行的方法就是使用预编译。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> User <span class="title">getUserById</span><span class="params">(String id)</span> <span class="keyword">throws</span> SQLException </span>&#123;</span><br><span class="line">    Connection connection = JDBCTOOLS.getConnection(); <span class="comment">//获取连接，细节省略</span></span><br><span class="line">    String sql = <span class="string">&quot;select id,username from user where id=?&quot;</span>;</span><br><span class="line">    PreparedStatement preparedStatement = connection.prepareStatement(sql); <span class="comment">//预编译</span></span><br><span class="line">    preparedStatement.setString(<span class="number">1</span>, id); <span class="comment">//绑定参数</span></span><br><span class="line">    ResultSet resultSet = preparedStatement.executeQuery();</span><br><span class="line"></span><br><span class="line">    resultSet.next();</span><br><span class="line">    <span class="keyword">int</span> userId = resultSet.getInt(<span class="number">1</span>);</span><br><span class="line">    String username = resultSet.getString(<span class="number">2</span>);</span><br><span class="line">    User user = <span class="keyword">new</span> User(userId, username);</span><br><span class="line">    <span class="keyword">return</span> user;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>在使用预编译之后，即使用户提交的参数中含有敏感关键字（union、select等），数据库也会将其作为对应字段的值来处理而不会解析其中的sql关键字。</p>
-<p>mybatis中这样写：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">CategoryMapper</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Select(&quot;select * from category_ where name= #&#123;name&#125; &quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> CategoryM <span class="title">getByName</span><span class="params">(String name)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>看起来比不使用预编译还要简单一点。</p>
-<h4 id="2-3-其他防御"><a href="#2-3-其他防御" class="headerlink" title="2.3 其他防御"></a>2.3 其他防御</h4><p>上面也提到过，预编译只能处理查询参数，对于其他位置存在用户可控的情况（order by、in、like等），无法提供有效的保护，此时就要具体情况具体分析。</p>
-<p>以上面提到的两种情况为例：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//like</span></span><br><span class="line">String sql = <span class="string">&quot;select * from user where username like concat(&#x27;%&#x27;, ?, &#x27;%&#x27;)&quot;</span>;</span><br><span class="line"><span class="comment">//预编译</span></span><br></pre></td></tr></table></figure>
-
-<p>order by可以设置白名单，只有白名单中的字段才可以拼接。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> String <span class="title">checkSort</span><span class="params">(String sortBy)</span> </span>&#123;</span><br><span class="line">    List&lt;String&gt; columns = <span class="keyword">new</span> ArrayList&lt;&gt;(Arrays.asList(<span class="string">&quot;id&quot;</span>, <span class="string">&quot;username&quot;</span>));</span><br><span class="line">    <span class="keyword">return</span> (columns.contains(sortBy)) ? sortBy : <span class="string">&quot;&#x27;&#x27;&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="0x03-参考资料"><a href="#0x03-参考资料" class="headerlink" title="0x03 参考资料"></a>0x03 参考资料</h3><p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MjM5OTk2MTMxOQ==&mid=2727827368&idx=1&sn=765d0835f0069b5145523c31e8229850&mpshare=1&scene=1&srcid=0926a6QC3pGbQ3Pznszb4n2q">Mybatis框架下SQL注入漏洞面面观</a></p>
-
+        <h3 id="0x01-漏洞挖掘"><a href="#0x01-漏洞挖掘" class="headerlink" title="0x01 漏洞挖掘"></a>0x01 漏洞挖掘</h3><h4 id="jdbc"><a href="#jdbc" class="headerlink" title="jdbc"></a>jdbc</h4><p>在上古时期，人们往往这么从数据库获取数据。
+        
+          <a class="article-more-a" href="/2022/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-sqli/#more">more >></a>
+        
       
 
       
@@ -805,7 +590,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2021/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-sqli/">展开全文 >></a>
+          <a class="article-more-a" href="/2022/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-sqli/">展开全文 >></a>
         </p>
       
 
@@ -843,39 +628,24 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2021/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssrf/">java代码审计-ssrf</a>
+      <a class="article-title" href="/2022/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssrf/">java代码审计-ssrf</a>
     </h1>
   
 
         
         
-<a href="/2021/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssrf/" class="archive-article-date">
-  	<time datetime="2021-04-25T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-25</time>
+<a href="/2022/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssrf/" class="archive-article-date">
+  	<time datetime="2022-04-25T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-25</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="0x01-漏洞挖掘"><a href="#0x01-漏洞挖掘" class="headerlink" title="0x01 漏洞挖掘"></a>0x01 漏洞挖掘</h2><p>java发送http请求的方式还是比较多的，下面是原生的：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">String url = request.getParameter(<span class="string">&quot;url&quot;</span>);</span><br><span class="line">URL u = <span class="keyword">new</span> URL(url);</span><br><span class="line"></span><br><span class="line"><span class="comment">//1.URL，直接打开，可以跨协议</span></span><br><span class="line">InputStream inputStream = u.openStream();</span><br><span class="line"></span><br><span class="line"><span class="comment">//2. URLConnection，使用这种方法发送请求可以跨协议</span></span><br><span class="line">URLConnection urlConnection = u.openConnection();</span><br><span class="line"><span class="comment">//3. HttpURLConnection，进行类型转换之后，只允许http/https</span></span><br><span class="line">HttpURLConnection httpURLConnection = (HttpURLConnection)urlConnection;</span><br><span class="line">InputStream inputStream = urlConnection.getInputStream();</span><br><span class="line"></span><br><span class="line"><span class="comment">//处理请求结果</span></span><br><span class="line">BufferedReader bufferedReader = <span class="keyword">new</span> BufferedReader(<span class="keyword">new</span> InputStreamReader(inputStream));</span><br><span class="line">String inputLine;</span><br><span class="line">StringBuilder html = <span class="keyword">new</span> StringBuilder();</span><br><span class="line"><span class="keyword">while</span> ((inputLine = bufferedReader.readLine()) != <span class="keyword">null</span>) &#123;</span><br><span class="line">  html.append(inputLine);</span><br><span class="line">&#125;</span><br><span class="line">response.getWriter().println(<span class="string">&quot;html:&quot;</span> + html.toString());</span><br><span class="line">bufferedReader.close();</span><br><span class="line"></span><br><span class="line"><span class="comment">//4. ImageIO，如果获取到的不是图片，会返回null</span></span><br><span class="line">BufferedImage img = ImageIO.read(u);</span><br></pre></td></tr></table></figure>
-
-<p>还有一部分第三方类库的：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Request漏洞示例</span></span><br><span class="line">String url = request.getParameter(<span class="string">&quot;url&quot;</span>);</span><br><span class="line"><span class="keyword">return</span> Request.Get(url).execute().returnContent().toString();<span class="comment">//发起请求</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// OkHttpClient漏洞示例</span></span><br><span class="line">String url = request.getParameter(<span class="string">&quot;url&quot;</span>);</span><br><span class="line">OkHttpClient client = <span class="keyword">new</span> OkHttpClient();</span><br><span class="line">com.squareup.okhttp.Request ok_http = <span class="keyword">new</span> com.squareup.okhttp.Request.Builder().url(url).build();</span><br><span class="line">client.newCall(ok_http).execute();  <span class="comment">//发起请求</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// HttpClients漏洞示例</span></span><br><span class="line">String url = request.getParameter(<span class="string">&quot;url&quot;</span>);</span><br><span class="line">CloseableHttpClient client = HttpClients.createDefault();</span><br><span class="line">HttpGet httpGet = <span class="keyword">new</span> HttpGet(url);</span><br><span class="line">HttpResponse httpResponse = client.execute(httpGet); <span class="comment">//发起请求</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="0x02-漏洞防御"><a href="#0x02-漏洞防御" class="headerlink" title="0x02 漏洞防御"></a>0x02 漏洞防御</h2><p>关于ssrf的防御，p牛已经给出了比较完善的解决方案<a target="_blank" rel="noopener" href="https://www.leavesongs.com/PYTHON/defend-ssrf-vulnerable-in-python.html">谈一谈如何在Python开发中拒绝SSRF漏洞</a>。</p>
-<p>总结下来无非是这么几点：</p>
-<ol>
-<li>正确处理302跳转（在业务角度看，不能直接禁止302，而是对跳转的地址重新进行检查）</li>
-<li>限制协议只能为http/https，防止跨协议</li>
-<li>设置内网ip黑名单（正确判定内网ip、正确获取host）</li>
-<li>设置常见web端口白名单（防止端口扫描，可能业务受限比较大）</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> connectTime = <span class="number">5</span> * <span class="number">1000</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">checkSsrf</span><span class="params">(String url)</span> </span>&#123;</span><br><span class="line">  HttpURLConnection httpURLConnection;</span><br><span class="line">  String finalUrl = url;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">      <span class="keyword">if</span>(!Pattern.matches(<span class="string">&quot;^https?://.*/.*$&quot;</span>, finalUrl)) &#123; <span class="comment">//只允许http/https协议</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span>(isInnerIp(url)) &#123; <span class="comment">//判断是否为内网ip</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      httpURLConnection = (HttpURLConnection) <span class="keyword">new</span> URL(finalUrl).openConnection();</span><br><span class="line">      httpURLConnection.setInstanceFollowRedirects(<span class="keyword">false</span>); <span class="comment">//不跟随跳转</span></span><br><span class="line">      httpURLConnection.setUseCaches(<span class="keyword">false</span>); <span class="comment">//不使用缓存</span></span><br><span class="line">      httpURLConnection.setConnectTimeout(connectTime); <span class="comment">//设置超时时间</span></span><br><span class="line">      httpURLConnection.connect(); <span class="comment">//send dns request</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">int</span> statusCode = httpURLConnection.getResponseCode();</span><br><span class="line">      <span class="keyword">if</span> (statusCode &gt;= <span class="number">300</span> &amp;&amp; statusCode &lt;=<span class="number">307</span> &amp;&amp; statusCode != <span class="number">304</span> &amp;&amp; statusCode != <span class="number">306</span>) &#123;</span><br><span class="line">        String redirectedUrl = httpURLConnection.getHeaderField(<span class="string">&quot;Location&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">null</span> == redirectedUrl)</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        finalUrl = redirectedUrl; <span class="comment">//获取到跳转之后的url，再次进行判断</span></span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">while</span> (httpURLConnection.getResponseCode() != HttpURLConnection.HTTP_OK);<span class="comment">//如果没有返回200，继续对跳转后的链接进行检查</span></span><br><span class="line">    httpURLConnection.disconnect();</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">isInnerIp</span><span class="params">(String url)</span> <span class="keyword">throws</span> URISyntaxException, UnknownHostException </span>&#123;</span><br><span class="line">    URI uri = <span class="keyword">new</span> URI(url);</span><br><span class="line">    String host = uri.getHost(); <span class="comment">//url转host</span></span><br><span class="line">  	<span class="comment">//这一步会发送dns请求，host转ip，各种进制也会转化为常见的x.x.x.x的格式</span></span><br><span class="line">    InetAddress inetAddress = InetAddress.getByName(host); </span><br><span class="line">    String ip = inetAddress.getHostAddress();</span><br><span class="line"></span><br><span class="line">    String blackSubnetlist[] = &#123;<span class="string">&quot;10.0.0.0/8&quot;</span>, <span class="string">&quot;172.16.0.0/12&quot;</span>, <span class="string">&quot;192.168.0.0/16&quot;</span>, <span class="string">&quot;127.0.0.0/8&quot;</span>&#125;; <span class="comment">//内网ip段</span></span><br><span class="line">    <span class="keyword">for</span>(String subnet : blackSubnetlist) &#123;</span><br><span class="line">      SubnetUtils subnetUtils = <span class="keyword">new</span> SubnetUtils(subnet); <span class="comment">//commons-net 3.6</span></span><br><span class="line">      <span class="keyword">if</span>(subnetUtils.getInfo().isInRange(ip)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>; <span class="comment">//如果ip在内网段中，直接返回</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="0x03-参考资料"><a href="#0x03-参考资料" class="headerlink" title="0x03 参考资料"></a>0x03 参考资料</h2><p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/2761">JAVA代码审计之XXE与SSRF</a></p>
-<p><a target="_blank" rel="noopener" href="https://www.leavesongs.com/PYTHON/defend-ssrf-vulnerable-in-python.html">谈一谈如何在Python开发中拒绝SSRF漏洞</a></p>
-
+        <h2 id="0x01-漏洞挖掘"><a href="#0x01-漏洞挖掘" class="headerlink" title="0x01 漏洞挖掘"></a>0x01 漏洞挖掘</h2><p>java发送http请求的方式还是比较多的，下面是原生的：
+        
+          <a class="article-more-a" href="/2022/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssrf/#more">more >></a>
+        
       
 
       
@@ -898,7 +668,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2021/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssrf/">展开全文 >></a>
+          <a class="article-more-a" href="/2022/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssrf/">展开全文 >></a>
         </p>
       
 
@@ -936,70 +706,24 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2021/04/24/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C/">java代码审计-文件操作</a>
+      <a class="article-title" href="/2022/04/24/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C/">java代码审计-文件操作</a>
     </h1>
   
 
         
         
-<a href="/2021/04/24/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C/" class="archive-article-date">
-  	<time datetime="2021-04-24T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-24</time>
+<a href="/2022/04/24/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C/" class="archive-article-date">
+  	<time datetime="2022-04-24T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-24</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="0x01-文件上传"><a href="#0x01-文件上传" class="headerlink" title="0x01 文件上传"></a>0x01 文件上传</h2><p>这段代码来自菜鸟教程：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String UPLOAD_PATH = <span class="string">&quot;/tmp/upload&quot;</span>;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">uploadWithFileUpload</span><span class="params">(HttpServletRequest request)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span>(!ServletFileUpload.isMultipartContent(request)) &#123;</span><br><span class="line">    <span class="comment">//response.getWriter().print(&quot;Error: 表单必须包含 enctype=multipart/form-data&quot;);</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">	<span class="comment">/*省略部分初始化代码*/</span></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    List&lt;FileItem&gt; fileItems = servletFileUpload.parseRequest(request);</span><br><span class="line">    <span class="keyword">if</span>(fileItems != <span class="keyword">null</span> &amp;&amp; fileItems.size() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">for</span>(FileItem fileItem : fileItems) &#123;</span><br><span class="line">        String fileName = <span class="keyword">new</span> File(fileItem.getName()).getName(); <span class="comment">//获取文件名</span></span><br><span class="line">        String filePath = UPLOAD_PATH + File.separator + fileName; <span class="comment">//上传路径</span></span><br><span class="line">        File storeFile = <span class="keyword">new</span> File(filePath);</span><br><span class="line">        fileItem.write(storeFile); <span class="comment">//写文件</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">//response.getWriter().println(&quot;upload success&quot;);</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    <span class="comment">//response.getWriter().print(e.getMessage());</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>标准的任意文件上传代码。。。现在的web框架会将上传的文件放在web访问不到的位置存储，这样会一定程度上缓解上传漏洞，但如果在展示文件时处理不当，就会导致任意文件读取或下载。</p>
-<p>servlet3之后，可以不使用commons-fileupload、commons-io这两个jar包来处理文件上传，转而使用<code>request.getParts()</code>获取上传文件。此外，servlet3还支持以注解的形式定义一些上传的属性。</p>
-<p><img src="https://mdpicture.oss-cn-beijing.aliyuncs.com/20190318224808.png"></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">uploadWithAnnotation</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="keyword">throws</span> IOException, ServletException </span>&#123;</span><br><span class="line">    Part part = request.getPart(<span class="string">&quot;fileName&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span>(part == <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    String filename = UPLOAD_PATH + File.separator + part.getSubmittedFileName();</span><br><span class="line">    part.write(filename);</span><br><span class="line">    part.delete();</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>可以看到这种方法代码比较简洁，需要注意的是要在类前面加<code>@MultipartConfig</code>这个注解，否则会报错。</p>
-<h3 id="防御"><a href="#防御" class="headerlink" title="防御"></a>防御</h3><p>文件上传参考这个<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/LzVseWzLP3CjQsmYzvELZA">https://mp.weixin.qq.com/s/LzVseWzLP3CjQsmYzvELZA</a></p>
-<ol>
-<li><p>判断文件content-type</p>
-</li>
-<li><p>文件上传后改名</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">String fileExt = filename.substring(filename.lastIndexOf(<span class="string">&quot;.&quot;</span>) + <span class="number">1</span>); <span class="comment">//获取后缀名</span></span><br><span class="line">String savename = UPLOAD_PATH + File.separator + DigestUtils.md5Hex(System.currentTimeMillis() + filename) + <span class="string">&quot;.&quot;</span> + fileExt;</span><br></pre></td></tr></table></figure></li>
-<li><p>设置严格的后缀名白名单</p>
-<p>使用esapi的后缀名检测，需要在对应的resource目录建立<code>ESAPI.properties</code>和<code>validation.properties</code>，文件内容可以留空，也可以下载官方内容<a target="_blank" rel="noopener" href="https://github.com/ESAPI/esapi-java-legacy/blob/develop/src/test/resources/esapi">https://github.com/ESAPI/esapi-java-legacy/blob/develop/src/test/resources/esapi</a></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//检测后缀名</span></span><br><span class="line"><span class="keyword">if</span>(!ESAPI.validator().isValidFileName(<span class="string">&quot;upload&quot;</span>, filename, ALLOW_EXT, <span class="keyword">false</span>)) &#123;</span><br><span class="line">    response.getWriter().println(<span class="string">&quot;后缀名不合法&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>对文件大小进行限制</p>
-<p>基于<code>ServletFileUpload</code></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">DiskFileItemFactory factory = <span class="keyword">new</span> DiskFileItemFactory();</span><br><span class="line">ServletFileUpload servletFileUpload = <span class="keyword">new</span> ServletFileUpload(factory);</span><br><span class="line">servletFileUpload.setSizeMax(<span class="number">1024</span> * <span class="number">400</span>);</span><br></pre></td></tr></table></figure>
-
-<p>基于注解（ version &gt; servlet3）</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@MultipartConfig(maxFileSize = 1000 * 1024 * 1024, maxRequestSize = 1000 * 1024 * 1024)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UploadServlet</span> <span class="keyword">extends</span> <span class="title">HttpServlet</span> </span>&#123;&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>条件允许的情况下，将文件放到web访问不到的位置存储</p>
-</li>
-</ol>
-<h2 id="0x02-文件操作（下载-读取-删除）"><a href="#0x02-文件操作（下载-读取-删除）" class="headerlink" title="0x02 文件操作（下载/读取/删除）"></a>0x02 文件操作（下载/读取/删除）</h2><p>这几个操作比较类似，都是对文件的操作。</p>
-<p>java的文件读取一般有两种方法，一种是基于InputStream，另一种是基于FileReader。</p>
-<h3 id="读取"><a href="#读取" class="headerlink" title="读取"></a>读取</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//InputStream</span></span><br><span class="line">File file = <span class="keyword">new</span> File(filename);</span><br><span class="line">InputStream inputStream = <span class="keyword">new</span> FileInputStream(file);</span><br><span class="line"><span class="keyword">while</span>(-<span class="number">1</span> != (len = inputStream.read())) &#123;</span><br><span class="line">  	outputStream.write(len);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//FileReader</span></span><br><span class="line">String fileContent = <span class="string">&quot;&quot;</span>;</span><br><span class="line">FileReader fileReader = <span class="keyword">new</span> FileReader(filename);</span><br><span class="line">BufferedReader bufferedReader = <span class="keyword">new</span> BufferedReader(fileReader);</span><br><span class="line">String line = <span class="string">&quot;&quot;</span>;</span><br><span class="line"><span class="keyword">while</span> (<span class="keyword">null</span> != (line = bufferedReader.readLine())) &#123;</span><br><span class="line">		fileContent += (line + <span class="string">&quot;\n&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h3><p>读写操作都有的情况下，用流比较方便。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//stream</span></span><br><span class="line">String filename = request.getParameter(<span class="string">&quot;filename&quot;</span>);</span><br><span class="line">File file = <span class="keyword">new</span> File(filename);</span><br><span class="line"></span><br><span class="line">response.reset();</span><br><span class="line">response.addHeader(<span class="string">&quot;Content-Disposition&quot;</span>, <span class="string">&quot;attachment;filename=&quot;</span> + <span class="keyword">new</span> String(filename.getBytes(<span class="string">&quot;utf-8&quot;</span>)));</span><br><span class="line">response.addHeader(<span class="string">&quot;Content-Length&quot;</span>, <span class="string">&quot;&quot;</span> + file.length());</span><br><span class="line">response.setContentType(<span class="string">&quot;application/octet-stream; charset=utf-8&quot;</span>);</span><br><span class="line"></span><br><span class="line">InputStream inputStream = <span class="keyword">new</span> FileInputStream(file);</span><br><span class="line">OutputStream outputStream = <span class="keyword">new</span> BufferedOutputStream(response.getOutputStream());</span><br><span class="line"><span class="keyword">int</span> len;</span><br><span class="line"><span class="keyword">while</span>(-<span class="number">1</span> != (len = inputStream.read())) &#123;</span><br><span class="line">  outputStream.write(len);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">inputStream.close();</span><br><span class="line">outputStream.close();</span><br></pre></td></tr></table></figure>
-
-<h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">String filename = request.getParameter(<span class="string">&quot;filename&quot;</span>);</span><br><span class="line">File file = <span class="keyword">new</span> File(filename);</span><br><span class="line"><span class="keyword">if</span>(file != <span class="keyword">null</span> &amp;&amp; file.exists() &amp;&amp; file.delete()) &#123;</span><br><span class="line">  	response.getWriter().println(<span class="string">&quot;delete success&quot;</span>);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  	response.getWriter().println(<span class="string">&quot;delete failed&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="防御-1"><a href="#防御-1" class="headerlink" title="防御"></a>防御</h3><p>防御的核心在于对传入的文件名进行正确的过滤，防止跨目录。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">checkFilename</span><span class="params">(String filename)</span> </span>&#123;</span><br><span class="line">    filename = filename.replace(<span class="string">&quot;\\&quot;</span>, <span class="string">&quot;/&quot;</span>); <span class="comment">//消除平台差异</span></span><br><span class="line">  	<span class="comment">//将文件操作限定在指定目录中</span></span><br><span class="line">  	File file = <span class="keyword">new</span> File(filename);</span><br><span class="line">    <span class="keyword">if</span>(file == <span class="keyword">null</span> || !file.exists() || file.getCanonicalFile().getParent().equals(<span class="keyword">new</span> File(DOWNLOAD_PATH).getCanonicalPath())) &#123; <span class="comment">//检测上级目录是否为指定目录</span></span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  	<span class="comment">//检测文件名中是否有敏感字符</span></span><br><span class="line">    List&lt;String&gt; blackList = Arrays.asList(<span class="string">&quot;./&quot;</span>, <span class="string">&quot;../&quot;</span>);</span><br><span class="line">    <span class="keyword">for</span>(String badChar : blackList) &#123;</span><br><span class="line">      <span class="keyword">if</span>(filename.contains(badChar)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  	<span class="comment">//对文件后缀名设置白名单</span></span><br><span class="line">    List&lt;String&gt; whiteExt = Arrays.asList(<span class="string">&quot;png&quot;</span>, <span class="string">&quot;jpg&quot;</span>, <span class="string">&quot;gif&quot;</span>, <span class="string">&quot;jpeg&quot;</span>, <span class="string">&quot;doc&quot;</span>);</span><br><span class="line">    String fileExt = filename.substring(filename.lastIndexOf(<span class="string">&quot;.&quot;</span>) + <span class="number">1</span>).toLowerCase();</span><br><span class="line">    <span class="keyword">if</span>(!whiteExt.contains(fileExt)) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="0x03-文件写入"><a href="#0x03-文件写入" class="headerlink" title="0x03 文件写入"></a>0x03 文件写入</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//FileWriter</span></span><br><span class="line">FileWriter fileWriter = <span class="keyword">new</span> FileWriter(filename);</span><br><span class="line">BufferedWriter bufferedWriter = <span class="keyword">new</span> BufferedWriter(fileWriter);</span><br><span class="line">bufferedWriter.write(fileContent);</span><br><span class="line">bufferedWriter.close();</span><br></pre></td></tr></table></figure>
-
-<h3 id="防御-2"><a href="#防御-2" class="headerlink" title="防御"></a>防御</h3><p>文件写入与上述三个操作略有不同，在防御时需要对写入的内容进行过滤。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">checkFilecontent</span><span class="params">(String fileContent)</span> </span>&#123;</span><br><span class="line">    List&lt;String&gt; blackContents = Arrays.asList(<span class="string">&quot;&lt;%@page&quot;</span>, <span class="string">&quot;&lt;%!&quot;</span>);</span><br><span class="line">    <span class="keyword">for</span>(String blackContent : blackContents) &#123;</span><br><span class="line">      <span class="keyword">if</span>(fileContent.contains(blackContent)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>在写入时最好将标签进行htmlencode</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">String fileContent = request.getParameter(<span class="string">&quot;content&quot;</span>);</span><br><span class="line">fileContent = ESAPI.encoder().encodeForHTML(fileContent);</span><br></pre></td></tr></table></figure>
-
-
+        <h2 id="0x01-文件上传"><a href="#0x01-文件上传" class="headerlink" title="0x01 文件上传"></a>0x01 文件上传</h2><p>这段代码来自菜鸟教程：
+        
+          <a class="article-more-a" href="/2022/04/24/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C/#more">more >></a>
+        
       
 
       
@@ -1022,7 +746,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2021/04/24/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C/">展开全文 >></a>
+          <a class="article-more-a" href="/2022/04/24/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C/">展开全文 >></a>
         </p>
       
 
@@ -1060,14 +784,14 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2021/04/23/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/">java代码审计-命令执行</a>
+      <a class="article-title" href="/2022/04/23/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/">java代码审计-命令执行</a>
     </h1>
   
 
         
         
-<a href="/2021/04/23/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/" class="archive-article-date">
-  	<time datetime="2021-04-23T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-23</time>
+<a href="/2022/04/23/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/" class="archive-article-date">
+  	<time datetime="2022-04-23T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-23</time>
 </a>
         
       </header>
@@ -1116,7 +840,85 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2021/04/23/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/">展开全文 >></a>
+          <a class="article-more-a" href="/2022/04/23/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-java代码审计-反序列化" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/04/22/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/">Java代码审计-反序列化</a>
+    </h1>
+  
+
+        
+        
+<a href="/2022/04/22/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" class="archive-article-date">
+  	<time datetime="2022-04-22T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-22</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="0x00-漏洞挖掘"><a href="#0x00-漏洞挖掘" class="headerlink" title="0x00 漏洞挖掘"></a>0x00 漏洞挖掘</h2><h3 id="业务代码"><a href="#业务代码" class="headerlink" title="业务代码"></a>业务代码</h3><p>简单来说，找<code>readObject/readUnshared</code>就好了</p>
+        
+          <a class="article-more-a" href="/2022/04/22/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/#more">more >></a>
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">文章</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/04/22/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/">展开全文 >></a>
         </p>
       
 

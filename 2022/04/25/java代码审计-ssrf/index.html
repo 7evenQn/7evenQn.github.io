@@ -6,14 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://example.com">
-  <title>Archives | 7evenQn&#39;s blog</title>
+  <title>java代码审计-ssrf | 7evenQn&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="7evenQn&#39;s blog">
-<meta property="og:url" content="http://example.com/archives/page/2/index.html">
+  <meta name="description" content="0x01 漏洞挖掘java发送http请求的方式还是比较多的，下面是原生的：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java代码审计-ssrf">
+<meta property="og:url" content="http://example.com/2022/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssrf/index.html">
 <meta property="og:site_name" content="7evenQn&#39;s blog">
+<meta property="og:description" content="0x01 漏洞挖掘java发送http请求的方式还是比较多的，下面是原生的：">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-04-25T08:50:09.000Z">
+<meta property="article:modified_time" content="2022-04-30T20:04:47.758Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="文章">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternative" href="/atom.xml" title="7evenQn&#39;s blog" type="application/atom+xml">
@@ -159,36 +164,90 @@
           </div>
           <div id="js-content" class="content-ll">
             
-  
-  
+<article id="post-java代码审计-ssrf" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
     
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2021" class="archive-year">2021</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/03/20/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E/" class="archive-article-date">
-  	<time datetime="2021-03-20T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-20</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/03/20/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E/">文件上传漏洞</a>
+    <h1 class="article-title" itemprop="name">
+      java代码审计-ssrf
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
+        
+        
+        <!-- 不蒜子统计 -->
+        <span id="busuanzi_container_page_pv" style='display:none' class="archive-article-date">
+              <i class="icon-smile icon"></i> 阅读数：<span id="busuanzi_value_page_pv"></span>次
+        </span>
+
+<a href="/2022/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssrf/" class="archive-article-date">
+  	<time datetime="2022-04-25T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-25</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="0x01-漏洞挖掘"><a href="#0x01-漏洞挖掘" class="headerlink" title="0x01 漏洞挖掘"></a>0x01 漏洞挖掘</h2><p>java发送http请求的方式还是比较多的，下面是原生的：<span id="more"></span></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">String url = request.getParameter(<span class="string">&quot;url&quot;</span>);</span><br><span class="line">URL u = <span class="keyword">new</span> URL(url);</span><br><span class="line"></span><br><span class="line"><span class="comment">//1.URL，直接打开，可以跨协议</span></span><br><span class="line">InputStream inputStream = u.openStream();</span><br><span class="line"></span><br><span class="line"><span class="comment">//2. URLConnection，使用这种方法发送请求可以跨协议</span></span><br><span class="line">URLConnection urlConnection = u.openConnection();</span><br><span class="line"><span class="comment">//3. HttpURLConnection，进行类型转换之后，只允许http/https</span></span><br><span class="line">HttpURLConnection httpURLConnection = (HttpURLConnection)urlConnection;</span><br><span class="line">InputStream inputStream = urlConnection.getInputStream();</span><br><span class="line"></span><br><span class="line"><span class="comment">//处理请求结果</span></span><br><span class="line">BufferedReader bufferedReader = <span class="keyword">new</span> BufferedReader(<span class="keyword">new</span> InputStreamReader(inputStream));</span><br><span class="line">String inputLine;</span><br><span class="line">StringBuilder html = <span class="keyword">new</span> StringBuilder();</span><br><span class="line"><span class="keyword">while</span> ((inputLine = bufferedReader.readLine()) != <span class="keyword">null</span>) &#123;</span><br><span class="line">  html.append(inputLine);</span><br><span class="line">&#125;</span><br><span class="line">response.getWriter().println(<span class="string">&quot;html:&quot;</span> + html.toString());</span><br><span class="line">bufferedReader.close();</span><br><span class="line"></span><br><span class="line"><span class="comment">//4. ImageIO，如果获取到的不是图片，会返回null</span></span><br><span class="line">BufferedImage img = ImageIO.read(u);</span><br></pre></td></tr></table></figure>
+
+<p>还有一部分第三方类库的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Request漏洞示例</span></span><br><span class="line">String url = request.getParameter(<span class="string">&quot;url&quot;</span>);</span><br><span class="line"><span class="keyword">return</span> Request.Get(url).execute().returnContent().toString();<span class="comment">//发起请求</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// OkHttpClient漏洞示例</span></span><br><span class="line">String url = request.getParameter(<span class="string">&quot;url&quot;</span>);</span><br><span class="line">OkHttpClient client = <span class="keyword">new</span> OkHttpClient();</span><br><span class="line">com.squareup.okhttp.Request ok_http = <span class="keyword">new</span> com.squareup.okhttp.Request.Builder().url(url).build();</span><br><span class="line">client.newCall(ok_http).execute();  <span class="comment">//发起请求</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// HttpClients漏洞示例</span></span><br><span class="line">String url = request.getParameter(<span class="string">&quot;url&quot;</span>);</span><br><span class="line">CloseableHttpClient client = HttpClients.createDefault();</span><br><span class="line">HttpGet httpGet = <span class="keyword">new</span> HttpGet(url);</span><br><span class="line">HttpResponse httpResponse = client.execute(httpGet); <span class="comment">//发起请求</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="0x02-漏洞防御"><a href="#0x02-漏洞防御" class="headerlink" title="0x02 漏洞防御"></a>0x02 漏洞防御</h2><p>关于ssrf的防御，p牛已经给出了比较完善的解决方案<a target="_blank" rel="noopener" href="https://www.leavesongs.com/PYTHON/defend-ssrf-vulnerable-in-python.html">谈一谈如何在Python开发中拒绝SSRF漏洞</a>。</p>
+<p>总结下来无非是这么几点：</p>
+<ol>
+<li>正确处理302跳转（在业务角度看，不能直接禁止302，而是对跳转的地址重新进行检查）</li>
+<li>限制协议只能为http/https，防止跨协议</li>
+<li>设置内网ip黑名单（正确判定内网ip、正确获取host）</li>
+<li>设置常见web端口白名单（防止端口扫描，可能业务受限比较大）</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> connectTime = <span class="number">5</span> * <span class="number">1000</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">checkSsrf</span><span class="params">(String url)</span> </span>&#123;</span><br><span class="line">  HttpURLConnection httpURLConnection;</span><br><span class="line">  String finalUrl = url;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">      <span class="keyword">if</span>(!Pattern.matches(<span class="string">&quot;^https?://.*/.*$&quot;</span>, finalUrl)) &#123; <span class="comment">//只允许http/https协议</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span>(isInnerIp(url)) &#123; <span class="comment">//判断是否为内网ip</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      httpURLConnection = (HttpURLConnection) <span class="keyword">new</span> URL(finalUrl).openConnection();</span><br><span class="line">      httpURLConnection.setInstanceFollowRedirects(<span class="keyword">false</span>); <span class="comment">//不跟随跳转</span></span><br><span class="line">      httpURLConnection.setUseCaches(<span class="keyword">false</span>); <span class="comment">//不使用缓存</span></span><br><span class="line">      httpURLConnection.setConnectTimeout(connectTime); <span class="comment">//设置超时时间</span></span><br><span class="line">      httpURLConnection.connect(); <span class="comment">//send dns request</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">int</span> statusCode = httpURLConnection.getResponseCode();</span><br><span class="line">      <span class="keyword">if</span> (statusCode &gt;= <span class="number">300</span> &amp;&amp; statusCode &lt;=<span class="number">307</span> &amp;&amp; statusCode != <span class="number">304</span> &amp;&amp; statusCode != <span class="number">306</span>) &#123;</span><br><span class="line">        String redirectedUrl = httpURLConnection.getHeaderField(<span class="string">&quot;Location&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">null</span> == redirectedUrl)</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        finalUrl = redirectedUrl; <span class="comment">//获取到跳转之后的url，再次进行判断</span></span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">while</span> (httpURLConnection.getResponseCode() != HttpURLConnection.HTTP_OK);<span class="comment">//如果没有返回200，继续对跳转后的链接进行检查</span></span><br><span class="line">    httpURLConnection.disconnect();</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">isInnerIp</span><span class="params">(String url)</span> <span class="keyword">throws</span> URISyntaxException, UnknownHostException </span>&#123;</span><br><span class="line">    URI uri = <span class="keyword">new</span> URI(url);</span><br><span class="line">    String host = uri.getHost(); <span class="comment">//url转host</span></span><br><span class="line">  	<span class="comment">//这一步会发送dns请求，host转ip，各种进制也会转化为常见的x.x.x.x的格式</span></span><br><span class="line">    InetAddress inetAddress = InetAddress.getByName(host); </span><br><span class="line">    String ip = inetAddress.getHostAddress();</span><br><span class="line"></span><br><span class="line">    String blackSubnetlist[] = &#123;<span class="string">&quot;10.0.0.0/8&quot;</span>, <span class="string">&quot;172.16.0.0/12&quot;</span>, <span class="string">&quot;192.168.0.0/16&quot;</span>, <span class="string">&quot;127.0.0.0/8&quot;</span>&#125;; <span class="comment">//内网ip段</span></span><br><span class="line">    <span class="keyword">for</span>(String subnet : blackSubnetlist) &#123;</span><br><span class="line">      SubnetUtils subnetUtils = <span class="keyword">new</span> SubnetUtils(subnet); <span class="comment">//commons-net 3.6</span></span><br><span class="line">      <span class="keyword">if</span>(subnetUtils.getInfo().isInRange(ip)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>; <span class="comment">//如果ip在内网段中，直接返回</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="0x03-参考资料"><a href="#0x03-参考资料" class="headerlink" title="0x03 参考资料"></a>0x03 参考资料</h2><p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/2761">JAVA代码审计之XXE与SSRF</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.leavesongs.com/PYTHON/defend-ssrf-vulnerable-in-python.html">谈一谈如何在Python开发中拒绝SSRF漏洞</a></p>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>Thank U<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/zfbm.jpg">
+                      <span class="reward-type">支付宝</span>
+                    </div>
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/vxm.png">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -200,23 +259,149 @@
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://7evenqn.github.io/022/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssrf/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
+  
+    <a href="/2022/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-sqli/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          Java代码审计-sqli
+        
+      </div>
+    </a>
   
   
-    </div></section>
+    <a href="/2022/04/24/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">java代码审计-文件操作</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E6%BC%8F%E6%B4%9E%E6%8C%96%E6%8E%98"><span class="toc-number">1.</span> <span class="toc-text">0x01 漏洞挖掘</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-%E6%BC%8F%E6%B4%9E%E9%98%B2%E5%BE%A1"><span class="toc-number">2.</span> <span class="toc-text">0x02 漏洞防御</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x03-%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-number">3.</span> <span class="toc-text">0x03 参考资料</span></a></li></ol>
+                    </div>
+                </span>
+            </div>
+        </div>
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
-    <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/archives/">&amp;laquo; Prev</a><a class="page-number" href="/archives/">1</a><span class="page-number current">2</span>
-    </nav>
   
+
+  
+
+  
+  
+		<div id="gitalk-container" style="padding: 0px 30px 0px 30px;"></div> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+
+if(true){
+	var gitalk = new Gitalk({
+  	clientID: '1016c0c4a9b6b3afaf0e',
+  	clientSecret: '34c05866ad4ac1b4bb163485d0b3dffeb0741984',
+  	repo: '7evenqn.github.io',
+  	owner: '7evenQn',
+  	admin: ['7evenQn'],
+  	id: 'java代码审计-ssrf',
+  	distractionFreeMode: 'true'
+})
+gitalk.render('gitalk-container') 
+}
+</script>
+		
 
 
           </div>
@@ -254,8 +439,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,

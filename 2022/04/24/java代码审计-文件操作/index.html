@@ -6,15 +6,22 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://example.com">
-  <title>Archives | 7evenQn&#39;s blog</title>
+  <title>java代码审计-文件操作 | 7evenQn&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="7evenQn&#39;s blog">
-<meta property="og:url" content="http://example.com/archives/page/2/index.html">
+  <meta name="description" content="0x01 文件上传这段代码来自菜鸟教程：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java代码审计-文件操作">
+<meta property="og:url" content="http://example.com/2022/04/24/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C/index.html">
 <meta property="og:site_name" content="7evenQn&#39;s blog">
+<meta property="og:description" content="0x01 文件上传这段代码来自菜鸟教程：">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://mdpicture.oss-cn-beijing.aliyuncs.com/20190318224808.png">
+<meta property="article:published_time" content="2022-04-24T08:50:09.000Z">
+<meta property="article:modified_time" content="2022-04-30T20:04:40.907Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="文章">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mdpicture.oss-cn-beijing.aliyuncs.com/20190318224808.png">
   
     <link rel="alternative" href="/atom.xml" title="7evenQn&#39;s blog" type="application/atom+xml">
   
@@ -159,36 +166,121 @@
           </div>
           <div id="js-content" class="content-ll">
             
-  
-  
+<article id="post-java代码审计-文件操作" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
     
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2021" class="archive-year">2021</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/03/20/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E/" class="archive-article-date">
-  	<time datetime="2021-03-20T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-20</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/03/20/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E/">文件上传漏洞</a>
+    <h1 class="article-title" itemprop="name">
+      java代码审计-文件操作
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
+        
+        
+        <!-- 不蒜子统计 -->
+        <span id="busuanzi_container_page_pv" style='display:none' class="archive-article-date">
+              <i class="icon-smile icon"></i> 阅读数：<span id="busuanzi_value_page_pv"></span>次
+        </span>
+
+<a href="/2022/04/24/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C/" class="archive-article-date">
+  	<time datetime="2022-04-24T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-24</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="0x01-文件上传"><a href="#0x01-文件上传" class="headerlink" title="0x01 文件上传"></a>0x01 文件上传</h2><p>这段代码来自菜鸟教程：<span id="more"></span></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String UPLOAD_PATH = <span class="string">&quot;/tmp/upload&quot;</span>;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">uploadWithFileUpload</span><span class="params">(HttpServletRequest request)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span>(!ServletFileUpload.isMultipartContent(request)) &#123;</span><br><span class="line">    <span class="comment">//response.getWriter().print(&quot;Error: 表单必须包含 enctype=multipart/form-data&quot;);</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">	<span class="comment">/*省略部分初始化代码*/</span></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    List&lt;FileItem&gt; fileItems = servletFileUpload.parseRequest(request);</span><br><span class="line">    <span class="keyword">if</span>(fileItems != <span class="keyword">null</span> &amp;&amp; fileItems.size() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">for</span>(FileItem fileItem : fileItems) &#123;</span><br><span class="line">        String fileName = <span class="keyword">new</span> File(fileItem.getName()).getName(); <span class="comment">//获取文件名</span></span><br><span class="line">        String filePath = UPLOAD_PATH + File.separator + fileName; <span class="comment">//上传路径</span></span><br><span class="line">        File storeFile = <span class="keyword">new</span> File(filePath);</span><br><span class="line">        fileItem.write(storeFile); <span class="comment">//写文件</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">//response.getWriter().println(&quot;upload success&quot;);</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    <span class="comment">//response.getWriter().print(e.getMessage());</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>标准的任意文件上传代码。。。现在的web框架会将上传的文件放在web访问不到的位置存储，这样会一定程度上缓解上传漏洞，但如果在展示文件时处理不当，就会导致任意文件读取或下载。</p>
+<p>servlet3之后，可以不使用commons-fileupload、commons-io这两个jar包来处理文件上传，转而使用<code>request.getParts()</code>获取上传文件。此外，servlet3还支持以注解的形式定义一些上传的属性。</p>
+<p><img src="https://mdpicture.oss-cn-beijing.aliyuncs.com/20190318224808.png"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">uploadWithAnnotation</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="keyword">throws</span> IOException, ServletException </span>&#123;</span><br><span class="line">    Part part = request.getPart(<span class="string">&quot;fileName&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span>(part == <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    String filename = UPLOAD_PATH + File.separator + part.getSubmittedFileName();</span><br><span class="line">    part.write(filename);</span><br><span class="line">    part.delete();</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这种方法代码比较简洁，需要注意的是要在类前面加<code>@MultipartConfig</code>这个注解，否则会报错。</p>
+<h3 id="防御"><a href="#防御" class="headerlink" title="防御"></a>防御</h3><p>文件上传参考这个<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/LzVseWzLP3CjQsmYzvELZA">https://mp.weixin.qq.com/s/LzVseWzLP3CjQsmYzvELZA</a></p>
+<ol>
+<li><p>判断文件content-type</p>
+</li>
+<li><p>文件上传后改名</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">String fileExt = filename.substring(filename.lastIndexOf(<span class="string">&quot;.&quot;</span>) + <span class="number">1</span>); <span class="comment">//获取后缀名</span></span><br><span class="line">String savename = UPLOAD_PATH + File.separator + DigestUtils.md5Hex(System.currentTimeMillis() + filename) + <span class="string">&quot;.&quot;</span> + fileExt;</span><br></pre></td></tr></table></figure></li>
+<li><p>设置严格的后缀名白名单</p>
+<p>使用esapi的后缀名检测，需要在对应的resource目录建立<code>ESAPI.properties</code>和<code>validation.properties</code>，文件内容可以留空，也可以下载官方内容<a target="_blank" rel="noopener" href="https://github.com/ESAPI/esapi-java-legacy/blob/develop/src/test/resources/esapi">https://github.com/ESAPI/esapi-java-legacy/blob/develop/src/test/resources/esapi</a></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//检测后缀名</span></span><br><span class="line"><span class="keyword">if</span>(!ESAPI.validator().isValidFileName(<span class="string">&quot;upload&quot;</span>, filename, ALLOW_EXT, <span class="keyword">false</span>)) &#123;</span><br><span class="line">    response.getWriter().println(<span class="string">&quot;后缀名不合法&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>对文件大小进行限制</p>
+<p>基于<code>ServletFileUpload</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">DiskFileItemFactory factory = <span class="keyword">new</span> DiskFileItemFactory();</span><br><span class="line">ServletFileUpload servletFileUpload = <span class="keyword">new</span> ServletFileUpload(factory);</span><br><span class="line">servletFileUpload.setSizeMax(<span class="number">1024</span> * <span class="number">400</span>);</span><br></pre></td></tr></table></figure>
+
+<p>基于注解（ version &gt; servlet3）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@MultipartConfig(maxFileSize = 1000 * 1024 * 1024, maxRequestSize = 1000 * 1024 * 1024)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UploadServlet</span> <span class="keyword">extends</span> <span class="title">HttpServlet</span> </span>&#123;&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>条件允许的情况下，将文件放到web访问不到的位置存储</p>
+</li>
+</ol>
+<h2 id="0x02-文件操作（下载-读取-删除）"><a href="#0x02-文件操作（下载-读取-删除）" class="headerlink" title="0x02 文件操作（下载/读取/删除）"></a>0x02 文件操作（下载/读取/删除）</h2><p>这几个操作比较类似，都是对文件的操作。</p>
+<p>java的文件读取一般有两种方法，一种是基于InputStream，另一种是基于FileReader。</p>
+<h3 id="读取"><a href="#读取" class="headerlink" title="读取"></a>读取</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//InputStream</span></span><br><span class="line">File file = <span class="keyword">new</span> File(filename);</span><br><span class="line">InputStream inputStream = <span class="keyword">new</span> FileInputStream(file);</span><br><span class="line"><span class="keyword">while</span>(-<span class="number">1</span> != (len = inputStream.read())) &#123;</span><br><span class="line">  	outputStream.write(len);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//FileReader</span></span><br><span class="line">String fileContent = <span class="string">&quot;&quot;</span>;</span><br><span class="line">FileReader fileReader = <span class="keyword">new</span> FileReader(filename);</span><br><span class="line">BufferedReader bufferedReader = <span class="keyword">new</span> BufferedReader(fileReader);</span><br><span class="line">String line = <span class="string">&quot;&quot;</span>;</span><br><span class="line"><span class="keyword">while</span> (<span class="keyword">null</span> != (line = bufferedReader.readLine())) &#123;</span><br><span class="line">		fileContent += (line + <span class="string">&quot;\n&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h3><p>读写操作都有的情况下，用流比较方便。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//stream</span></span><br><span class="line">String filename = request.getParameter(<span class="string">&quot;filename&quot;</span>);</span><br><span class="line">File file = <span class="keyword">new</span> File(filename);</span><br><span class="line"></span><br><span class="line">response.reset();</span><br><span class="line">response.addHeader(<span class="string">&quot;Content-Disposition&quot;</span>, <span class="string">&quot;attachment;filename=&quot;</span> + <span class="keyword">new</span> String(filename.getBytes(<span class="string">&quot;utf-8&quot;</span>)));</span><br><span class="line">response.addHeader(<span class="string">&quot;Content-Length&quot;</span>, <span class="string">&quot;&quot;</span> + file.length());</span><br><span class="line">response.setContentType(<span class="string">&quot;application/octet-stream; charset=utf-8&quot;</span>);</span><br><span class="line"></span><br><span class="line">InputStream inputStream = <span class="keyword">new</span> FileInputStream(file);</span><br><span class="line">OutputStream outputStream = <span class="keyword">new</span> BufferedOutputStream(response.getOutputStream());</span><br><span class="line"><span class="keyword">int</span> len;</span><br><span class="line"><span class="keyword">while</span>(-<span class="number">1</span> != (len = inputStream.read())) &#123;</span><br><span class="line">  outputStream.write(len);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">inputStream.close();</span><br><span class="line">outputStream.close();</span><br></pre></td></tr></table></figure>
+
+<h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">String filename = request.getParameter(<span class="string">&quot;filename&quot;</span>);</span><br><span class="line">File file = <span class="keyword">new</span> File(filename);</span><br><span class="line"><span class="keyword">if</span>(file != <span class="keyword">null</span> &amp;&amp; file.exists() &amp;&amp; file.delete()) &#123;</span><br><span class="line">  	response.getWriter().println(<span class="string">&quot;delete success&quot;</span>);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  	response.getWriter().println(<span class="string">&quot;delete failed&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="防御-1"><a href="#防御-1" class="headerlink" title="防御"></a>防御</h3><p>防御的核心在于对传入的文件名进行正确的过滤，防止跨目录。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">checkFilename</span><span class="params">(String filename)</span> </span>&#123;</span><br><span class="line">    filename = filename.replace(<span class="string">&quot;\\&quot;</span>, <span class="string">&quot;/&quot;</span>); <span class="comment">//消除平台差异</span></span><br><span class="line">  	<span class="comment">//将文件操作限定在指定目录中</span></span><br><span class="line">  	File file = <span class="keyword">new</span> File(filename);</span><br><span class="line">    <span class="keyword">if</span>(file == <span class="keyword">null</span> || !file.exists() || file.getCanonicalFile().getParent().equals(<span class="keyword">new</span> File(DOWNLOAD_PATH).getCanonicalPath())) &#123; <span class="comment">//检测上级目录是否为指定目录</span></span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  	<span class="comment">//检测文件名中是否有敏感字符</span></span><br><span class="line">    List&lt;String&gt; blackList = Arrays.asList(<span class="string">&quot;./&quot;</span>, <span class="string">&quot;../&quot;</span>);</span><br><span class="line">    <span class="keyword">for</span>(String badChar : blackList) &#123;</span><br><span class="line">      <span class="keyword">if</span>(filename.contains(badChar)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  	<span class="comment">//对文件后缀名设置白名单</span></span><br><span class="line">    List&lt;String&gt; whiteExt = Arrays.asList(<span class="string">&quot;png&quot;</span>, <span class="string">&quot;jpg&quot;</span>, <span class="string">&quot;gif&quot;</span>, <span class="string">&quot;jpeg&quot;</span>, <span class="string">&quot;doc&quot;</span>);</span><br><span class="line">    String fileExt = filename.substring(filename.lastIndexOf(<span class="string">&quot;.&quot;</span>) + <span class="number">1</span>).toLowerCase();</span><br><span class="line">    <span class="keyword">if</span>(!whiteExt.contains(fileExt)) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="0x03-文件写入"><a href="#0x03-文件写入" class="headerlink" title="0x03 文件写入"></a>0x03 文件写入</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//FileWriter</span></span><br><span class="line">FileWriter fileWriter = <span class="keyword">new</span> FileWriter(filename);</span><br><span class="line">BufferedWriter bufferedWriter = <span class="keyword">new</span> BufferedWriter(fileWriter);</span><br><span class="line">bufferedWriter.write(fileContent);</span><br><span class="line">bufferedWriter.close();</span><br></pre></td></tr></table></figure>
+
+<h3 id="防御-2"><a href="#防御-2" class="headerlink" title="防御"></a>防御</h3><p>文件写入与上述三个操作略有不同，在防御时需要对写入的内容进行过滤。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">checkFilecontent</span><span class="params">(String fileContent)</span> </span>&#123;</span><br><span class="line">    List&lt;String&gt; blackContents = Arrays.asList(<span class="string">&quot;&lt;%@page&quot;</span>, <span class="string">&quot;&lt;%!&quot;</span>);</span><br><span class="line">    <span class="keyword">for</span>(String blackContent : blackContents) &#123;</span><br><span class="line">      <span class="keyword">if</span>(fileContent.contains(blackContent)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在写入时最好将标签进行htmlencode</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">String fileContent = request.getParameter(<span class="string">&quot;content&quot;</span>);</span><br><span class="line">fileContent = ESAPI.encoder().encodeForHTML(fileContent);</span><br></pre></td></tr></table></figure>
+
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>Thank U<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/zfbm.jpg">
+                      <span class="reward-type">支付宝</span>
+                    </div>
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/vxm.png">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -200,23 +292,149 @@
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://7evenqn.github.io/022/04/24/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
+  
+    <a href="/2022/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssrf/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          java代码审计-ssrf
+        
+      </div>
+    </a>
   
   
-    </div></section>
+    <a href="/2022/04/23/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">java代码审计-命令执行</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0"><span class="toc-number">1.</span> <span class="toc-text">0x01 文件上传</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1"><span class="toc-number">1.1.</span> <span class="toc-text">防御</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C%EF%BC%88%E4%B8%8B%E8%BD%BD-%E8%AF%BB%E5%8F%96-%E5%88%A0%E9%99%A4%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">0x02 文件操作（下载&#x2F;读取&#x2F;删除）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96"><span class="toc-number">2.1.</span> <span class="toc-text">读取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8B%E8%BD%BD"><span class="toc-number">2.2.</span> <span class="toc-text">下载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A0%E9%99%A4"><span class="toc-number">2.3.</span> <span class="toc-text">删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1-1"><span class="toc-number">2.4.</span> <span class="toc-text">防御</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x03-%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5"><span class="toc-number">3.</span> <span class="toc-text">0x03 文件写入</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1-2"><span class="toc-number">3.1.</span> <span class="toc-text">防御</span></a></li></ol></li></ol>
+                    </div>
+                </span>
+            </div>
+        </div>
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
-    <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/archives/">&amp;laquo; Prev</a><a class="page-number" href="/archives/">1</a><span class="page-number current">2</span>
-    </nav>
   
+
+  
+
+  
+  
+		<div id="gitalk-container" style="padding: 0px 30px 0px 30px;"></div> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+
+if(true){
+	var gitalk = new Gitalk({
+  	clientID: '1016c0c4a9b6b3afaf0e',
+  	clientSecret: '34c05866ad4ac1b4bb163485d0b3dffeb0741984',
+  	repo: '7evenqn.github.io',
+  	owner: '7evenQn',
+  	admin: ['7evenQn'],
+  	id: 'java代码审计-文件操作',
+  	distractionFreeMode: 'true'
+})
+gitalk.render('gitalk-container') 
+}
+</script>
+		
 
 
           </div>
@@ -254,8 +472,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
