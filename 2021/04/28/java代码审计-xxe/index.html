@@ -6,14 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://example.com">
-  <title>Archives: 2021/4 | 7evenQn&#39;s blog</title>
+  <title>java代码审计-xxe | 7evenQn&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="7evenQn&#39;s blog">
-<meta property="og:url" content="http://example.com/archives/2021/04/index.html">
+  <meta name="description" content="0x00 漏洞挖掘java解析xml的方法有多种，比较常见的有四种：DOM、DOM4J、JDOM 和SAX。 123456789101112131415161718192021222324&#x2F;&#x2F;1. DocumentBuilder 原生、可回显import javax.xml.parsers.DocumentBuilderFactory;DocumentBuilderFactory dbf &#x3D; Do">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java代码审计-xxe">
+<meta property="og:url" content="http://example.com/2021/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xxe/index.html">
 <meta property="og:site_name" content="7evenQn&#39;s blog">
+<meta property="og:description" content="0x00 漏洞挖掘java解析xml的方法有多种，比较常见的有四种：DOM、DOM4J、JDOM 和SAX。 123456789101112131415161718192021222324&#x2F;&#x2F;1. DocumentBuilder 原生、可回显import javax.xml.parsers.DocumentBuilderFactory;DocumentBuilderFactory dbf &#x3D; Do">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-04-28T08:50:09.000Z">
+<meta property="article:modified_time" content="2022-04-30T19:56:50.752Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="文章">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternative" href="/atom.xml" title="7evenQn&#39;s blog" type="application/atom+xml">
@@ -159,36 +164,84 @@
           </div>
           <div id="js-content" class="content-ll">
             
+<article id="post-java代码审计-xxe" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
+    <h1 class="article-title" itemprop="name">
+      java代码审计-xxe
+    </h1>
   
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2021" class="archive-year">2021</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
+
+        
+        
+        <!-- 不蒜子统计 -->
+        <span id="busuanzi_container_page_pv" style='display:none' class="archive-article-date">
+              <i class="icon-smile icon"></i> 阅读数：<span id="busuanzi_value_page_pv"></span>次
+        </span>
+
 <a href="/2021/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xxe/" class="archive-article-date">
   	<time datetime="2021-04-28T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-28</time>
 </a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xxe/">java代码审计-xxe</a>
-    </h1>
-  
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="0x00-漏洞挖掘"><a href="#0x00-漏洞挖掘" class="headerlink" title="0x00 漏洞挖掘"></a>0x00 漏洞挖掘</h2><p>java解析xml的方法有多种，比较常见的有四种：DOM、DOM4J、JDOM 和SAX。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1. DocumentBuilder 原生、可回显</span></span><br><span class="line"><span class="keyword">import</span> javax.xml.parsers.DocumentBuilderFactory;</span><br><span class="line">DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();</span><br><span class="line">DocumentBuilder db = dbf.newDocumentBuilder();</span><br><span class="line">StringReader sr = <span class="keyword">new</span> StringReader(xml_con);</span><br><span class="line">InputSource is = <span class="keyword">new</span> InputSource(sr);</span><br><span class="line">Document document = db.parse(is); </span><br><span class="line"></span><br><span class="line"><span class="comment">//2. saxReader 第三方库</span></span><br><span class="line"><span class="keyword">import</span> org.dom4j.io.SAXReader;</span><br><span class="line">SAXReader saxReader = <span class="keyword">new</span> SAXReader();</span><br><span class="line">Document document = saxReader.read(request.getInputStream());</span><br><span class="line"></span><br><span class="line"><span class="comment">//3. SAXBuilder 第三方库</span></span><br><span class="line"><span class="keyword">import</span> org.jdom2.input.SAXBuilder;</span><br><span class="line">SAXBuilder builder = <span class="keyword">new</span> SAXBuilder();  </span><br><span class="line">Document document = builder.build(request.getInputStream());</span><br><span class="line"></span><br><span class="line"><span class="comment">//4. SAXParserFactory 原生、不可回显</span></span><br><span class="line"><span class="keyword">import</span> javax.xml.parsers.SAXParserFactory;</span><br><span class="line">SAXParserFactory factory  = SAXParserFactory.newInstance(); </span><br><span class="line">SAXParser saxparser = factory.newSAXParser();</span><br><span class="line">SAXHandler handler = <span class="keyword">new</span> SAXHandler();  </span><br><span class="line">saxparser.parse(request.getInputStream(), handler);</span><br></pre></td></tr></table></figure>
 
-        <div class="article-info info-on-right">
-          
+<p>还有其他整理如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.xml.sax.helpers.XMLReaderFactory;</span><br><span class="line">XMLReader xmlReader = XMLReaderFactory.createXMLReader();</span><br><span class="line">xmlReader.parse( <span class="keyword">new</span> InputSource(<span class="keyword">new</span> StringReader(xml_con)) );</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.digester3.Digester;</span><br><span class="line">Digester digester = <span class="keyword">new</span> Digester();</span><br><span class="line">digester.parse(<span class="keyword">new</span> StringReader(xml_con)); </span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.xml.parsers.DocumentBuilderFactory;</span><br><span class="line">DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();</span><br><span class="line">dbf.setXIncludeAware(<span class="keyword">true</span>);   <span class="comment">// 支持XInclude</span></span><br><span class="line">dbf.setNamespaceAware(<span class="keyword">true</span>);  <span class="comment">// 支持XInclude</span></span><br><span class="line">DocumentBuilder db = dbf.newDocumentBuilder();</span><br><span class="line">StringReader sr = <span class="keyword">new</span> StringReader(xml_con);</span><br><span class="line">InputSource is = <span class="keyword">new</span> InputSource(sr);</span><br><span class="line">Document document = db.parse(is);  <span class="comment">// parse xml</span></span><br><span class="line"></span><br><span class="line">SAXParserFactory spf = SAXParserFactory.newInstance();</span><br><span class="line">SAXParser saxParser = spf.newSAXParser();</span><br><span class="line">XMLReader xmlReader = saxParser.getXMLReader();</span><br><span class="line">xmlReader.parse( <span class="keyword">new</span> InputSource(<span class="keyword">new</span> StringReader(xml_con)) );</span><br></pre></td></tr></table></figure>
+
+<p>通常parse方法返回void的，就是无回显的。</p>
+<h2 id="0x01-漏洞防御"><a href="#0x01-漏洞防御" class="headerlink" title="0x01 漏洞防御"></a>0x01 漏洞防御</h2><p>xxe的防御比较简单，禁用外部实体即可。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//实例化解析类之后通常会支持着三个配置</span></span><br><span class="line">obj.setFeature(<span class="string">&quot;http://apache.org/xml/features/disallow-doctype-decl&quot;</span>, <span class="keyword">true</span>);</span><br><span class="line">obj.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-general-entities&quot;</span>, <span class="keyword">false</span>);</span><br><span class="line">obj.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-parameter-entities&quot;</span>, <span class="keyword">false</span>);</span><br></pre></td></tr></table></figure>
+
+<h2 id="0x02-参考链接"><a href="#0x02-参考链接" class="headerlink" title="0x02 参考链接"></a>0x02 参考链接</h2><p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/2761">JAVA代码审计之XXE与SSRF</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/JoyChou93/java-sec-code/blob/master/src/main/java/org/joychou/controller/XXE.java">https://github.com/JoyChou93/java-sec-code/blob/master/src/main/java/org/joychou/controller/XXE.java</a></p>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>Thank U<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/zfbm.jpg">
+                      <span class="reward-type">支付宝</span>
+                    </div>
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/vxm.png">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -200,363 +253,140 @@
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://7evenqn.github.io/021/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xxe/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5/" class="archive-article-date">
-  	<time datetime="2021-04-28T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-28</time>
-</a>
+<nav id="article-nav">
+  
+  
+    <a href="/2021/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">java代码审计-表达式注入</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/04/28/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5/">java代码审计-表达式注入</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">文章</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
+        
+        
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x00-%E6%BC%8F%E6%B4%9E%E6%8C%96%E6%8E%98"><span class="toc-number">1.</span> <span class="toc-text">0x00 漏洞挖掘</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E6%BC%8F%E6%B4%9E%E9%98%B2%E5%BE%A1"><span class="toc-number">2.</span> <span class="toc-text">0x01 漏洞防御</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-number">3.</span> <span class="toc-text">0x02 参考链接</span></a></li></ol>
+                    </div>
+                </span>
+            </div>
         </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
+        
+    </div>
+</aside>
+
+
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/27/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xss/" class="archive-article-date">
-  	<time datetime="2021-04-27T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-27</time>
-</a>
-        </div>
-    	 
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/04/27/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-xss/">java代码审计-xss</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">文章</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/26/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssti/" class="archive-article-date">
-  	<time datetime="2021-04-26T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-26</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/04/26/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssti/">java代码审计-ssti</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">文章</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/26/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E/" class="archive-article-date">
-  	<time datetime="2021-04-26T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-26</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/04/26/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E/">文件上</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">文章</a>
-        		</li>
-      		
-		</ul>
-	</div>
+  
+  
+		<div id="gitalk-container" style="padding: 0px 30px 0px 30px;"></div> 
 
-          
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script type="text/javascript">
 
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-sqli/" class="archive-article-date">
-  	<time datetime="2021-04-25T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-25</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-sqli/">Java代码审计-sqli</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">文章</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssrf/" class="archive-article-date">
-  	<time datetime="2021-04-25T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-25</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/04/25/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-ssrf/">java代码审计-ssrf</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">文章</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/24/hello-world/" class="archive-article-date">
-  	<time datetime="2021-04-24T14:04:39.247Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-24</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/04/24/hello-world/">Welcome to 7evenQn’s blog</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/24/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C/" class="archive-article-date">
-  	<time datetime="2021-04-24T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-24</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/04/24/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C/">java代码审计-文件操作</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">文章</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2021/04/23/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/" class="archive-article-date">
-  	<time datetime="2021-04-23T08:50:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-04-23</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/04/23/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/">java代码审计-命令执行</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">文章</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
-
-    
-    <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/archives/2021/04/page/2/">2</a><a class="extend next" rel="next" href="/archives/2021/04/page/2/">Next &amp;raquo;</a>
-    </nav>
-  
+if(true){
+	var gitalk = new Gitalk({
+  	clientID: '1016c0c4a9b6b3afaf0e',
+  	clientSecret: '34c05866ad4ac1b4bb163485d0b3dffeb0741984',
+  	repo: '7evenqn.github.io',
+  	owner: '7evenQn',
+  	admin: ['7evenQn'],
+  	id: 'java代码审计-xxe',
+  	distractionFreeMode: 'true'
+})
+gitalk.render('gitalk-container') 
+}
+</script>
+		
 
 
           </div>
@@ -594,8 +424,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
